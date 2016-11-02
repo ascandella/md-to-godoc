@@ -34,9 +34,11 @@ const GodocExtensions = 0 |
 	blackfriday.EXTENSION_BACKSLASH_LINE_BREAK
 
 var (
-	nl     = []byte("\n")
-	nlnl   = []byte("\n\n")
-	indent = []byte("  ")
+	nl       = []byte("\n")
+	nlnl     = []byte("\n\n")
+	indent   = []byte("  ")
+	star     = []byte("*")
+	starstar = []byte("**")
 )
 
 // Godoc returns a blackfriday renderer for doc.go style package documentation.
@@ -86,11 +88,20 @@ func (g *GodocRenderer) HRule(out *bytes.Buffer) {
 }
 
 func (g *GodocRenderer) List(out *bytes.Buffer, text func() bool, flags int) {
-	// TODO
+	marker := out.Len()
+
+	if !text() {
+		out.Truncate(marker)
+		return
+	}
+
+	out.Write(nlnl)
 }
 
 func (g *GodocRenderer) ListItem(out *bytes.Buffer, text []byte, flags int) {
-	// TODO
+	out.WriteString("• ")
+	out.Write(text)
+	out.Write(nlnl)
 }
 
 func (g *GodocRenderer) Paragraph(out *bytes.Buffer, text func() bool) {
@@ -136,15 +147,19 @@ func (g *GodocRenderer) AutoLink(out *bytes.Buffer, link []byte, kind int) {
 }
 
 func (g *GodocRenderer) CodeSpan(out *bytes.Buffer, text []byte) {
-	// TODO
+	out.Write(text)
 }
 
 func (g *GodocRenderer) DoubleEmphasis(out *bytes.Buffer, text []byte) {
-	// TODO
+	out.Write(starstar)
+	out.Write(text)
+	out.Write(starstar)
 }
 
 func (g *GodocRenderer) Emphasis(out *bytes.Buffer, text []byte) {
-	// TODO
+	out.Write(star)
+	out.Write(text)
+	out.Write(star)
 }
 
 func (g *GodocRenderer) Image(out *bytes.Buffer, link []byte, title []byte, alt []byte) {
