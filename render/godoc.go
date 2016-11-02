@@ -18,6 +18,7 @@ package render
 import (
 	"bufio"
 	"bytes"
+	"sync"
 
 	"github.com/russross/blackfriday"
 )
@@ -51,7 +52,10 @@ func Godoc(pkg string) blackfriday.Renderer {
 // GodocRenderer implements the blackfriday.Render interface for doc.go style
 // package documentation
 type GodocRenderer struct {
-	pkg string
+	sync.Mutex
+
+	pkg              string
+	pkgHeaderWritten bool
 }
 
 // block-level callbacks
@@ -81,6 +85,13 @@ func (g *GodocRenderer) Header(out *bytes.Buffer, text func() bool, level int, i
 	if !text() {
 		out.Truncate(marker)
 		return
+	}
+
+	g.Lock()
+	defer g.Unlock()
+	if !g.pkgHeaderWritten {
+		out.WriteString(".")
+		g.pkgHeaderWritten = true
 	}
 
 	out.Write(nlnl)
