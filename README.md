@@ -1,4 +1,4 @@
-# md-to-godoc
+# Markdown to Godoc converter
 
 Sort of like [godocdown](https://github.com/robertkrimen/godocdown), but in
 reverse.
