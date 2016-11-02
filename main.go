@@ -20,6 +20,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 
 	"github.com/sectioneight/md-to-godoc/render"
@@ -76,6 +77,13 @@ func writer() io.WriteCloser {
 		return os.Stdout
 	}
 
+	// Assume they want doc.go to go into the same directory as the input file,
+	// Unless they manually set the output.
+	inBase := filepath.Dir(*inFile)
+	if inBase != "." && *outFile == "doc.go" {
+		*outFile = path.Join(inBase, *outFile)
+	}
+
 	f, err := os.Create(*outFile)
 	if err != nil {
 		panic(err)
@@ -88,6 +96,9 @@ func packageName() string {
 		return *pkgName
 	}
 	dir := filepath.Dir(*inFile)
+	if !filepath.IsAbs(dir) && dir != "." {
+		dir = "./" + dir
+	}
 	cmd := exec.Command("go", append(goListCmd, dir)...)
 	output, err := cmd.Output()
 	if err != nil {

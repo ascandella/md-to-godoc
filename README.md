@@ -10,6 +10,16 @@ documentation.
 
 Way, way alpha. Barebones. The minimalest.
 
+## Code example
+
+Mostly here so we can see some code in godoc:
+
+```go
+func main() {
+  fmt.Println("Hello, world")
+}
+```
+
 ## Licence
 
 [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)

@@ -16,6 +16,7 @@
 package render
 
 import (
+	"bufio"
 	"bytes"
 
 	"github.com/russross/blackfriday"
@@ -33,8 +34,9 @@ const GodocExtensions = 0 |
 	blackfriday.EXTENSION_BACKSLASH_LINE_BREAK
 
 var (
-	nl   = []byte("\n")
-	nlnl = []byte("\n\n")
+	nl     = []byte("\n")
+	nlnl   = []byte("\n\n")
+	indent = []byte("  ")
 )
 
 // Godoc returns a blackfriday renderer for doc.go style package documentation.
@@ -52,7 +54,12 @@ type GodocRenderer struct {
 
 // block-level callbacks
 func (g *GodocRenderer) BlockCode(out *bytes.Buffer, text []byte, lang string) {
-	// TODO
+	s := bufio.NewScanner(bytes.NewBuffer(text))
+	for s.Scan() {
+		out.Write(indent)
+		out.Write(s.Bytes())
+		out.Write(nl)
+	}
 }
 
 func (g *GodocRenderer) BlockQuote(out *bytes.Buffer, text []byte) {
