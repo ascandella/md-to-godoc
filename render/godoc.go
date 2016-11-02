@@ -58,8 +58,11 @@ type GodocRenderer struct {
 func (g *GodocRenderer) BlockCode(out *bytes.Buffer, text []byte, lang string) {
 	s := bufio.NewScanner(bytes.NewBuffer(text))
 	for s.Scan() {
-		out.Write(indent)
-		out.Write(s.Bytes())
+		b := s.Bytes()
+		if len(b) > 0 {
+			out.Write(indent)
+			out.Write(s.Bytes())
+		}
 		out.Write(nl)
 	}
 }
@@ -210,6 +213,7 @@ func (g *GodocRenderer) NormalText(out *bytes.Buffer, text []byte) {
 // DocumentHeader writes the beginning of the package documentation.
 func (g *GodocRenderer) DocumentHeader(out *bytes.Buffer) {
 	out.WriteString("/*\n")
+	out.WriteString("Package " + g.pkg + " is the ")
 }
 
 // DocumentFooter writes the end of the package documentation
