@@ -1,5 +1,5 @@
 /*
-Package main is the Markdown to Godoc converter
+Package main is the Markdown to Godoc converter.
 
 Sort of like godocdown (https://github.com/robertkrimen/godocdown), but in
 reverse.

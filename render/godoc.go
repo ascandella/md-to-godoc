@@ -18,25 +18,18 @@ package render
 import (
 	"bufio"
 	"bytes"
-	"sync"
+	"fmt"
+	"io"
+	"os"
 
 	"github.com/russross/blackfriday"
 )
 
 // GodocExtensions are the default markdown extensions for blackfriday
-const GodocExtensions = 0 |
-	blackfriday.EXTENSION_NO_INTRA_EMPHASIS |
-	blackfriday.EXTENSION_TABLES |
-	blackfriday.EXTENSION_FENCED_CODE |
-	blackfriday.EXTENSION_AUTOLINK |
-	blackfriday.EXTENSION_STRIKETHROUGH |
-	blackfriday.EXTENSION_SPACE_HEADERS |
-	blackfriday.EXTENSION_HEADER_IDS |
-	blackfriday.EXTENSION_BACKSLASH_LINE_BREAK
+const GodocExtensions = blackfriday.CommonExtensions
 
 var (
 	nl       = []byte("\n")
-	nlnl     = []byte("\n\n")
 	indent   = []byte("  ")
 	star     = []byte("*")
 	starstar = []byte("**")
@@ -52,14 +45,141 @@ func Godoc(pkg string) blackfriday.Renderer {
 // GodocRenderer implements the blackfriday.Render interface for doc.go style
 // package documentation
 type GodocRenderer struct {
-	sync.Mutex
-
 	pkg              string
 	pkgHeaderWritten bool
+	lastOutputLen    int
+	inImage          bool
 }
 
-// block-level callbacks
-func (g *GodocRenderer) BlockCode(out *bytes.Buffer, text []byte, lang string) {
+// Render walks the specified (sub)tree and returns a godoc document.
+func (g *GodocRenderer) Render(ast *blackfriday.Node) []byte {
+	var buff bytes.Buffer
+	g.DocumentHeader(&buff)
+
+	ast.Walk(func(node *blackfriday.Node, entering bool) blackfriday.WalkStatus {
+		return g.RenderNode(&buff, node, entering)
+	})
+
+	g.DocumentFooter(&buff)
+	return buff.Bytes()
+}
+
+// RenderNode is a default renderer of a single node of a syntax tree. For
+// block nodes it will be called twice: first time with entering=true, second
+// time with entering=false, so that it could know when it's working on an open
+// tag and when on close. It writes the result to w.
+//
+// The return value is a way to tell the calling walker to adjust its walk
+// pattern: e.g. it can terminate the traversal by returning Terminate. Or it
+// can ask the walker to skip a subtree of this node by returning SkipChildren.
+// The typical behavior is to return GoToNext, which asks for the usual
+// traversal to the next node.
+func (g *GodocRenderer) RenderNode(w io.Writer, node *blackfriday.Node, entering bool) blackfriday.WalkStatus {
+	// you don't know, til you know
+	if os.Getenv("DEBUG_IT") == "yass" {
+		fmt.Printf("Type: %+v Val: |%+v|\n", node.Type, string(node.Literal))
+	}
+	switch node.Type {
+	case blackfriday.Text:
+		g.out(w, node.Literal)
+	case blackfriday.Softbreak:
+		g.cr(w)
+	case blackfriday.Hardbreak:
+		g.cr(w)
+		g.cr(w)
+
+	case blackfriday.Header:
+		if entering {
+			g.out(w, node.Literal)
+		} else {
+			if !g.pkgHeaderWritten {
+				g.out(w, []byte("."))
+				g.pkgHeaderWritten = true
+			}
+			g.cr(w)
+			g.cr(w)
+		}
+
+	case blackfriday.Paragraph:
+		if entering {
+			g.out(w, node.Literal)
+		} else {
+			g.cr(w)
+			g.cr(w)
+		}
+
+	case blackfriday.Document:
+		break
+	case blackfriday.List:
+		g.out(w, nl)
+
+	case blackfriday.Link:
+		if g.inImage {
+			break
+		}
+		if entering {
+			if len(node.LinkData.Title) > 0 {
+				g.out(w, node.LinkData.Title)
+			}
+		} else {
+			dest := node.LinkData.Destination
+			g.out(w, []byte(" ("))
+			g.out(w, dest)
+			g.out(w, []byte(")"))
+		}
+
+	case blackfriday.Emph:
+		g.out(w, star)
+	case blackfriday.Strong:
+		g.out(w, starstar)
+
+	case blackfriday.Image:
+		g.inImage = entering
+		// nope
+		return blackfriday.SkipChildren
+
+	case blackfriday.Item:
+		if entering {
+			if node.Prev != nil {
+				g.cr(w)
+			}
+			g.out(w, []byte("• "))
+		} else {
+			g.out(w, node.Literal)
+			g.cr(w)
+		}
+
+	case blackfriday.CodeBlock:
+		g.blockCode(w, node.Literal, string(node.Info))
+
+	case blackfriday.Code:
+		// Sadly, no inline code support or emphasis
+		g.out(w, node.Literal)
+
+	case blackfriday.Table:
+		// unsupported, do nothing
+	case blackfriday.TableCell, blackfriday.TableRow, blackfriday.TableBody, blackfriday.TableHead:
+		// unsupported, do nothing
+
+	default:
+		panic("Unknown node type " + node.Type.String())
+	}
+
+	return blackfriday.GoToNext
+}
+
+func (g *GodocRenderer) out(w io.Writer, text []byte) {
+	w.Write(text)
+	g.lastOutputLen = len(text)
+}
+
+func (g *GodocRenderer) cr(w io.Writer) {
+	if g.lastOutputLen > 0 {
+		g.out(w, nl)
+	}
+}
+
+func (g *GodocRenderer) blockCode(out io.Writer, text []byte, lang string) {
 	s := bufio.NewScanner(bytes.NewBuffer(text))
 	for s.Scan() {
 		b := s.Bytes()
@@ -71,156 +191,6 @@ func (g *GodocRenderer) BlockCode(out *bytes.Buffer, text []byte, lang string) {
 	}
 }
 
-func (g *GodocRenderer) BlockQuote(out *bytes.Buffer, text []byte) {
-	// TODO
-}
-
-func (g *GodocRenderer) BlockHtml(out *bytes.Buffer, text []byte) {
-	// TODO
-}
-
-func (g *GodocRenderer) Header(out *bytes.Buffer, text func() bool, level int, id string) {
-	marker := out.Len()
-
-	if !text() {
-		out.Truncate(marker)
-		return
-	}
-
-	g.Lock()
-	defer g.Unlock()
-	if !g.pkgHeaderWritten {
-		out.WriteString(".")
-		g.pkgHeaderWritten = true
-	}
-
-	out.Write(nlnl)
-}
-
-func (g *GodocRenderer) HRule(out *bytes.Buffer) {
-	// TODO
-}
-
-func (g *GodocRenderer) List(out *bytes.Buffer, text func() bool, flags int) {
-	marker := out.Len()
-
-	if !text() {
-		out.Truncate(marker)
-		return
-	}
-
-	out.Write(nlnl)
-}
-
-func (g *GodocRenderer) ListItem(out *bytes.Buffer, text []byte, flags int) {
-	out.WriteString("• ")
-	out.Write(text)
-	out.Write(nlnl)
-}
-
-func (g *GodocRenderer) Paragraph(out *bytes.Buffer, text func() bool) {
-	marker := out.Len()
-	if !text() {
-		out.Truncate(marker)
-		return
-	}
-	out.Write(nlnl)
-}
-
-func (g *GodocRenderer) Table(out *bytes.Buffer, header []byte, body []byte, columnData []int) {
-	// TODO
-}
-
-func (g *GodocRenderer) TableRow(out *bytes.Buffer, text []byte) {
-	// TODO
-}
-
-func (g *GodocRenderer) TableHeaderCell(out *bytes.Buffer, text []byte, flags int) {
-	// TODO
-}
-
-func (g *GodocRenderer) TableCell(out *bytes.Buffer, text []byte, flags int) {
-	// TODO
-}
-
-func (g *GodocRenderer) Footnotes(out *bytes.Buffer, text func() bool) {
-	// TODO
-}
-
-func (g *GodocRenderer) FootnoteItem(out *bytes.Buffer, name, text []byte, flags int) {
-	// TODO
-}
-
-func (g *GodocRenderer) TitleBlock(out *bytes.Buffer, text []byte) {
-	// TODO
-}
-
-// Span-level callbacks
-func (g *GodocRenderer) AutoLink(out *bytes.Buffer, link []byte, kind int) {
-	out.Write(link)
-}
-
-func (g *GodocRenderer) CodeSpan(out *bytes.Buffer, text []byte) {
-	out.Write(text)
-}
-
-func (g *GodocRenderer) DoubleEmphasis(out *bytes.Buffer, text []byte) {
-	out.Write(starstar)
-	out.Write(text)
-	out.Write(starstar)
-}
-
-func (g *GodocRenderer) Emphasis(out *bytes.Buffer, text []byte) {
-	out.Write(star)
-	out.Write(text)
-	out.Write(star)
-}
-
-func (g *GodocRenderer) Image(out *bytes.Buffer, link []byte, title []byte, alt []byte) {
-	// TODO
-}
-
-// LineBreak outputs a newline
-func (g *GodocRenderer) LineBreak(out *bytes.Buffer) {
-	out.Write(nl)
-}
-
-func (g *GodocRenderer) Link(out *bytes.Buffer, link []byte, title []byte, content []byte) {
-	out.Write(content)
-	out.WriteString(" (")
-	out.Write(link)
-	out.WriteString(")")
-	if len(title) > 0 {
-		out.WriteString(": ")
-		out.Write(content)
-	}
-}
-
-func (g *GodocRenderer) RawHtmlTag(out *bytes.Buffer, tag []byte) {
-	// TODO
-}
-
-func (g *GodocRenderer) TripleEmphasis(out *bytes.Buffer, text []byte) {
-	// TODO
-}
-
-func (g *GodocRenderer) StrikeThrough(out *bytes.Buffer, text []byte) {
-	// TODO
-}
-
-func (g *GodocRenderer) FootnoteRef(out *bytes.Buffer, ref []byte, id int) {
-	// TODO
-}
-
-// Low-level callbacks
-func (g *GodocRenderer) Entity(out *bytes.Buffer, entity []byte) {
-	out.Write(entity)
-}
-
-func (g *GodocRenderer) NormalText(out *bytes.Buffer, text []byte) {
-	out.Write(text)
-}
-
 // DocumentHeader writes the beginning of the package documentation.
 func (g *GodocRenderer) DocumentHeader(out *bytes.Buffer) {
 	out.WriteString("/*\n")
@@ -230,10 +200,4 @@ func (g *GodocRenderer) DocumentHeader(out *bytes.Buffer) {
 // DocumentFooter writes the end of the package documentation
 func (g *GodocRenderer) DocumentFooter(out *bytes.Buffer) {
 	out.WriteString("*/\npackage " + g.pkg + "\n")
-}
-
-// GetFlags seems unused in blackfriday, but is implemented to satisfy the
-// interface.
-func (g *GodocRenderer) GetFlags() int {
-	return 0
 }
