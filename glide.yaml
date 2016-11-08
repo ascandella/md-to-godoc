@@ -1,3 +1,4 @@
 package: github.com/sectioneight/md-to-godoc
 import:
 - package: github.com/russross/blackfriday
+  version: 2
