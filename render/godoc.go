@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log"
 	"os"
 
 	"github.com/russross/blackfriday"
@@ -76,9 +77,11 @@ func (g *GodocRenderer) Render(ast *blackfriday.Node) []byte {
 // traversal to the next node.
 func (g *GodocRenderer) RenderNode(w io.Writer, node *blackfriday.Node, entering bool) blackfriday.WalkStatus {
 	// you don't know, til you know
-	if os.Getenv("DEBUG_IT") == "yass" {
-		fmt.Printf("Type: %+v Val: |%+v|\n", node.Type, string(node.Literal))
+	debug := os.Getenv("DEBUG_IT") == "yass"
+	if debug {
+		log.Printf("Type: %+v Val: |%+v|, /%+v/\n", node.Type, string(node.Literal), node)
 	}
+
 	switch node.Type {
 	case blackfriday.Text:
 		g.out(w, node.Literal)
@@ -115,7 +118,10 @@ func (g *GodocRenderer) RenderNode(w io.Writer, node *blackfriday.Node, entering
 
 	case blackfriday.Link:
 		if g.inImage {
-			break
+			if debug {
+				log.Println("Skip children for image")
+			}
+			return blackfriday.SkipChildren
 		}
 		if entering {
 			if len(node.LinkData.Title) > 0 {
@@ -134,6 +140,9 @@ func (g *GodocRenderer) RenderNode(w io.Writer, node *blackfriday.Node, entering
 		g.out(w, starstar)
 
 	case blackfriday.Image:
+		if debug {
+			fmt.Printf("Setting inImage to %v\n", entering)
+		}
 		g.inImage = entering
 		// nope
 		return blackfriday.SkipChildren
