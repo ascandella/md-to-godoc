@@ -145,7 +145,6 @@ func (g *GodocRenderer) RenderNode(w io.Writer, node *blackfriday.Node, entering
 		}
 		g.inImage = entering
 		// nope
-		return blackfriday.SkipChildren
 
 	case blackfriday.Item:
 		if entering {
