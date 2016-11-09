@@ -196,8 +196,9 @@ func (g *GodocRenderer) blockCode(out io.Writer, text []byte, lang string) {
 			out.Write(indent)
 			out.Write(s.Bytes())
 		}
-		out.Write(nl)
+		g.cr(out)
 	}
+	g.cr(out)
 }
 
 // DocumentHeader writes the beginning of the package documentation.
