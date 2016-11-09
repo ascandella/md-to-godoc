@@ -49,7 +49,7 @@ func main() {
 	}
 
 	renderer := render.Godoc(packageName())
-	output := blackfriday.MarkdownOptions(input, renderer, blackfriday.Options{
+	output := blackfriday.Markdown(input, renderer, blackfriday.Options{
 		Extensions: render.GodocExtensions,
 	})
 
