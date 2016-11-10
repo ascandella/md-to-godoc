@@ -2,3 +2,8 @@ package: github.com/sectioneight/md-to-godoc
 import:
 - package: github.com/russross/blackfriday
   version: 2
+testImport:
+- package: github.com/stretchr/testify
+  subpackages:
+    - assert
+    - require

@@ -1,8 +1,21 @@
-hash: 0ac48dbeb4bbe2a08a5cb34d9f16ca1f2780a128dc195d51f301e11f2ebcd028
-updated: 2016-11-08T06:55:46.264683866-08:00
+hash: 1da0a2d0a8cebfb1453741417076e3998dab8fecf56b72d18c505bf3fbfd9d9f
+updated: 2016-11-09T17:59:08.416829204-08:00
 imports:
 - name: github.com/russross/blackfriday
   version: 52676fb0053ff19b59451b2aed2a1b8de7d89592
 - name: github.com/shurcooL/sanitized_anchor_name
   version: 1dba4b3954bc059efc3991ec364f9f9a35f597d2
-testImports: []
+testImports:
+- name: github.com/davecgh/go-spew
+  version: 346938d642f2ec3594ed81d874461961cd0faa76
+  subpackages:
+  - spew
+- name: github.com/pmezard/go-difflib
+  version: 792786c7400a136282c1664665ae0a8db921c6c2
+  subpackages:
+  - difflib
+- name: github.com/stretchr/testify
+  version: 69483b4bd14f5845b5a1e55bca19e954e827f1d0
+  subpackages:
+  - assert
+  - require
