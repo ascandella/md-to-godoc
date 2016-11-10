@@ -65,5 +65,6 @@ func TestBlockCode(t *testing.T) {
 	g := &GodocRenderer{}
 	g.blockCode(buff, code, "go")
 
-	assert.Equal(t, buff.String(), `  fmt.Println("Hello, world")`)
+	expected := "  fmt.Println(\"Hello, world\")\n//\n//"
+	assert.Equal(t, expected, buff.String())
 }

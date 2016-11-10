@@ -39,7 +39,7 @@
 // • Pass that method into the module initialization:
 //
 //   func main() {
-//     fmt.Println("Hello, wrld")
+//     fmt.Println("Hello, world")
 //   }
 //
 // Usage
