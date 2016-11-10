@@ -21,7 +21,6 @@ Mostly here so we can see some code in godoc:
 
 * This is a test
 * And another test
-* Pass that method into the module initialization:
 
 ```go
 func main() {
