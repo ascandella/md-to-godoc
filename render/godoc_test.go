@@ -13,3 +13,37 @@
 // limitations under the License.
 
 package render
+
+import (
+	"bytes"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestDocumentHeader(t *testing.T) {
+	out := &bytes.Buffer{}
+	g := &GodocRenderer{
+		pkg: "fun",
+	}
+	g.DocumentHeader(out)
+	assert.Equal(t, out.String(), "/*\nPackage fun is the ")
+}
+
+func TestDocumentFooter(t *testing.T) {
+	out := &bytes.Buffer{}
+	g := &GodocRenderer{
+		pkg: "fun",
+	}
+	g.DocumentFooter(out)
+	assert.Equal(t, out.String(), "*/\npackage fun\n")
+}
+
+func TestBlockCode(t *testing.T) {
+	buff := &bytes.Buffer{}
+	code := []byte(`fmt.Println("Hello, world")`)
+	g := &GodocRenderer{}
+	g.blockCode(buff, code, "go")
+
+	assert.Equal(t, buff.String(), `  fmt.Println("Hello, world")`)
+}
