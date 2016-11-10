@@ -1,0 +1,21 @@
+language: go
+go_import_path: github.com/sectioneight/md-to-godoc
+
+go:
+  - 1.6
+  - 1.7
+  - tip
+
+matrix:
+  fast_finish: true
+
+cache:
+  directories:
+    - vendor
+
+install:
+  - make dependencies
+
+script:
+  - make lint
+  - make test
