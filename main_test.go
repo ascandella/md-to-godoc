@@ -92,6 +92,16 @@ func TestWriter_CustomFile(t *testing.T) {
 	})
 }
 
+func TestWriteLicence_OK(t *testing.T) {
+	defer overrideBool(licence, true)()
+
+	require.NotPanics(t, main)
+	contents, err := ioutil.ReadFile("doc.go")
+	require.NoError(t, err)
+
+	assert.Contains(t, string(contents), "Copyright 2016")
+}
+
 func overrideBool(target *bool, val bool) func() {
 	old := *target
 	*target = val
