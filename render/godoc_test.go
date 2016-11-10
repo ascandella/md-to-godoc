@@ -36,7 +36,7 @@ func TestRender_OK(t *testing.T) {
 
 	bs := g.Render(ast)
 	assert.Equal(t,
-		"/*\nPackage mypkg is the hello*/\npackage mypkg\n",
+		"// Package mypkg is the hello\npackage mypkg\n",
 		string(bs),
 	)
 }
@@ -47,7 +47,7 @@ func TestDocumentHeader(t *testing.T) {
 		pkg: "fun",
 	}
 	g.DocumentHeader(out)
-	assert.Equal(t, out.String(), "/*\nPackage fun is the ")
+	assert.Equal(t, out.String(), "// Package fun is the ")
 }
 
 func TestDocumentFooter(t *testing.T) {
@@ -56,7 +56,7 @@ func TestDocumentFooter(t *testing.T) {
 		pkg: "fun",
 	}
 	g.DocumentFooter(out)
-	assert.Equal(t, out.String(), "*/\npackage fun\n")
+	assert.Equal(t, out.String(), "\npackage fun\n")
 }
 
 func TestBlockCode(t *testing.T) {

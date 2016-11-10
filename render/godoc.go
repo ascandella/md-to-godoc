@@ -29,10 +29,12 @@ import (
 const GodocExtensions = blackfriday.CommonExtensions
 
 var (
-	nl       = []byte("\n")
-	indent   = []byte("  ")
-	star     = []byte("*")
-	starstar = []byte("**")
+	nl         = []byte("\n")
+	indent     = []byte("  ")
+	space      = []byte(" ")
+	star       = []byte("*")
+	starstar   = []byte("**")
+	slashslash = []byte("//")
 )
 
 // Godoc returns a blackfriday renderer for doc.go style package documentation.
@@ -53,6 +55,7 @@ type GodocRenderer struct {
 	lastOutputLen    int
 	imageInLink      bool
 	inLink           bool
+	newline          bool
 }
 
 // Render walks the specified (sub)tree and returns a godoc document.
@@ -93,9 +96,21 @@ func (g *GodocRenderer) RenderNode(w io.Writer, node *blackfriday.Node, entering
 			}
 			return blackfriday.GoToNext
 		}
-		g.out(w, node.Literal)
+		lines := bytes.Split(node.Literal, nl)
+		for _, line := range lines {
+			// Trim off trailing space for OCD
+			if len(line) > 0 && string(line[len(line)-1]) == " " {
+				line = line[0 : len(line)-1]
+			}
+			g.out(w, line)
+			if len(lines) > 1 {
+				g.cr(w)
+			}
+		}
+
 	case blackfriday.Softbreak:
 		g.cr(w)
+
 	case blackfriday.Hardbreak:
 		g.cr(w)
 		g.cr(w)
@@ -123,7 +138,9 @@ func (g *GodocRenderer) RenderNode(w io.Writer, node *blackfriday.Node, entering
 	case blackfriday.Document:
 		break
 	case blackfriday.List:
-		g.out(w, nl)
+		if !entering {
+			g.cr(w)
+		}
 
 	case blackfriday.Link:
 		g.inLink = entering
@@ -191,6 +208,10 @@ func (g *GodocRenderer) RenderNode(w io.Writer, node *blackfriday.Node, entering
 }
 
 func (g *GodocRenderer) out(w io.Writer, text []byte) {
+	if g.newline && len(text) > 0 && string(text) != "//" && string(text) != "\n" {
+		w.Write(space)
+		g.newline = false
+	}
 	w.Write(text)
 	g.lastOutputLen = len(text)
 }
@@ -198,6 +219,8 @@ func (g *GodocRenderer) out(w io.Writer, text []byte) {
 func (g *GodocRenderer) cr(w io.Writer) {
 	if g.lastOutputLen > 0 {
 		g.out(w, nl)
+		g.out(w, slashslash)
+		g.newline = true
 	}
 }
 
@@ -206,8 +229,8 @@ func (g *GodocRenderer) blockCode(out io.Writer, text []byte, lang string) {
 	for s.Scan() {
 		b := s.Bytes()
 		if len(b) > 0 {
-			out.Write(indent)
-			out.Write(s.Bytes())
+			g.out(out, indent)
+			g.out(out, s.Bytes())
 		}
 		g.cr(out)
 	}
@@ -216,11 +239,10 @@ func (g *GodocRenderer) blockCode(out io.Writer, text []byte, lang string) {
 
 // DocumentHeader writes the beginning of the package documentation.
 func (g *GodocRenderer) DocumentHeader(out *bytes.Buffer) {
-	out.WriteString("/*\n")
-	out.WriteString("Package " + g.pkg + " is the ")
+	out.WriteString("// Package " + g.pkg + " is the ")
 }
 
 // DocumentFooter writes the end of the package documentation
 func (g *GodocRenderer) DocumentFooter(out *bytes.Buffer) {
-	out.WriteString("*/\npackage " + g.pkg + "\n")
+	out.WriteString("\npackage " + g.pkg + "\n")
 }

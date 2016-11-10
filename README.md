@@ -17,6 +17,12 @@ Way, way alpha. Barebones. The minimalest.
 
 Mostly here so we can see some code in godoc:
 
+## Sample list
+
+* This is a test
+* And another test
+* Pass that method into the module initialization:
+
 ```go
 func main() {
   fmt.Println("Hello, world")
