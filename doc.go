@@ -15,7 +15,6 @@
 /*
 Package main is the Markdown to Godoc converter.
 
-Build Status (https://travis-ci.org/sectioneight/md-to-godoc) Coverage Status (https://coveralls.io/github/sectioneight/md-to-godoc?branch=master)
 
 Sort of like godocdown (https://github.com/robertkrimen/godocdown), but in
 reverse.

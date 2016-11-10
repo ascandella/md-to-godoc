@@ -38,6 +38,7 @@ var (
 	pkgName     = flag.String("pkg", "", "Package name. If empty, infer from directory of input")
 	license     = flag.Bool("license", true, "Add license header from file")
 	licenseFile = flag.String("licenseFile", "LICENSE.txt", "File to read license header from")
+	badges      = flag.Bool("badges", false, "Enable output for badges (links with images)")
 
 	goListCmd = []string{"list", "-f", "{{.Name}}"}
 )
@@ -52,7 +53,7 @@ func main() {
 		log.Fatal("Could not read input file: ", err)
 	}
 
-	renderer := render.Godoc(packageName())
+	renderer := render.Godoc(packageName(), *badges)
 	output := blackfriday.Markdown(input, renderer, blackfriday.Options{
 		Extensions: render.GodocExtensions,
 	})
