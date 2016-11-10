@@ -92,8 +92,8 @@ func TestWriter_CustomFile(t *testing.T) {
 	})
 }
 
-func TestWriteLicence_OK(t *testing.T) {
-	defer overrideBool(licence, true)()
+func TestWritelicense_OK(t *testing.T) {
+	defer overrideBool(license, true)()
 
 	require.NotPanics(t, main)
 	contents, err := ioutil.ReadFile("doc.go")

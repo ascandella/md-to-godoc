@@ -36,8 +36,8 @@ var (
 	stdout      = flag.Bool("stdout", false, "Write to STDOUT instead of a file")
 	stdin       = flag.Bool("stdin", false, "Read from STDIN instead of a file")
 	pkgName     = flag.String("pkg", "", "Package name. If empty, infer from directory of input")
-	licence     = flag.Bool("licence", true, "Add licence header from file")
-	licenceFile = flag.String("licenceFile", "LICENSE.txt", "File to read licence header from")
+	license     = flag.Bool("license", true, "Add license header from file")
+	licenseFile = flag.String("licenseFile", "LICENSE.txt", "File to read license header from")
 
 	goListCmd = []string{"list", "-f", "{{.Name}}"}
 )
@@ -60,17 +60,17 @@ func main() {
 	w := writer()
 	defer w.Close()
 
-	if *licence {
-		if _, err := os.Stat(*licenceFile); err == nil {
-			writeLicence(w, *licenceFile)
+	if *license {
+		if _, err := os.Stat(*licenseFile); err == nil {
+			writelicense(w, *licenseFile)
 		}
 	}
 	w.Write(output)
 }
 
-func writeLicence(w io.Writer, path string) {
-	licenceLines := readLicence(*licenceFile)
-	for _, line := range licenceLines {
+func writelicense(w io.Writer, path string) {
+	licenseLines := readlicense(*licenseFile)
+	for _, line := range licenseLines {
 		w.Write([]byte("//"))
 		if len(line) > 0 {
 			w.Write([]byte(" "))
@@ -81,7 +81,7 @@ func writeLicence(w io.Writer, path string) {
 	w.Write([]byte("\n"))
 }
 
-func readLicence(path string) [][]byte {
+func readlicense(path string) [][]byte {
 	fb, err := ioutil.ReadFile(path)
 	if err != nil {
 		panic(err)
