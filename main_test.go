@@ -14,10 +14,12 @@
 package main
 
 import (
+	"io/ioutil"
 	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestReader_Stdin(t *testing.T) {
@@ -68,6 +70,26 @@ func TestPackageName_Relative(t *testing.T) {
 	defer overrideString(inFile, "render/README.md")()
 
 	assert.Equal(t, "render", packageName())
+}
+
+func TestMain_OK(t *testing.T) {
+	assert.NotPanics(t, main)
+}
+
+func TestMain_PanicsBadReader(t *testing.T) {
+	defer overrideString(inFile, "bad-text-file")()
+	assert.Panics(t, main)
+}
+
+func TestWriter_CustomFile(t *testing.T) {
+	tmpFile, err := ioutil.TempFile("", "md-to-godoc")
+	require.NoError(t, err)
+	defer os.Remove(tmpFile.Name())
+	defer overrideString(outFile, tmpFile.Name())()
+
+	assert.NotPanics(t, func() {
+		reader()
+	})
 }
 
 func overrideBool(target *bool, val bool) func() {

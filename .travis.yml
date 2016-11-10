@@ -21,4 +21,4 @@ script:
   - make test
 
 after_success:
-  - '[ "${TRAVIS_GO_VERSION}" -eq "1.71] && make coveralls'
+  - '[ "${TRAVIS_GO_VERSION}" -eq "1.7" ] && make coveralls'
