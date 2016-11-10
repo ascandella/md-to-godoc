@@ -4,7 +4,7 @@ PKG_FILES = *.go render
 
 .PHONY: dependencies
 dependencies:
-	@which overalls || go get -u github.com/go-playgroudn/overalls
+	@which overalls || go get -u github.com/go-playground/overalls
 	@which goveralls || go get -u -f github.com/mattn/goveralls
 
 LINT_LOG := lint.log
