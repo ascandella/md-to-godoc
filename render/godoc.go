@@ -165,8 +165,14 @@ func (g *GodocRenderer) RenderNode(w io.Writer, node *blackfriday.Node, entering
 		}
 
 	case blackfriday.Emph:
+		if entering {
+			g.out(w, space)
+		}
 		g.out(w, star)
 	case blackfriday.Strong:
+		if entering {
+			g.out(w, space)
+		}
 		g.out(w, starstar)
 
 	case blackfriday.Image:

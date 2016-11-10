@@ -11,7 +11,7 @@ documentation.
 
 ## Status
 
-Way, way alpha. Barebones. The minimalest.
+Way, **way** alpha. Barebones. The minimalest.
 
 ## Code example
 
