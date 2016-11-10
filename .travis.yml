@@ -17,5 +17,8 @@ install:
   - make dependencies
 
 script:
-  - make lint
+  - make clean lint
   - make test
+
+after_success:
+  - '[ "${TRAVIS_GO_VERSION}" -eq "1.71] && make coveralls'
