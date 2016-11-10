@@ -18,7 +18,6 @@ package render
 import (
 	"bufio"
 	"bytes"
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -37,19 +36,23 @@ var (
 )
 
 // Godoc returns a blackfriday renderer for doc.go style package documentation.
-func Godoc(pkg string) blackfriday.Renderer {
+func Godoc(pkg string, badges bool) blackfriday.Renderer {
 	return &GodocRenderer{
-		pkg: pkg,
+		pkg:     pkg,
+		noBadge: !badges,
 	}
 }
 
 // GodocRenderer implements the blackfriday.Render interface for doc.go style
 // package documentation
 type GodocRenderer struct {
-	pkg              string
+	pkg     string
+	noBadge bool
+
 	pkgHeaderWritten bool
 	lastOutputLen    int
-	inImage          bool
+	imageInLink      bool
+	inLink           bool
 }
 
 // Render walks the specified (sub)tree and returns a godoc document.
@@ -77,13 +80,19 @@ func (g *GodocRenderer) Render(ast *blackfriday.Node) []byte {
 // traversal to the next node.
 func (g *GodocRenderer) RenderNode(w io.Writer, node *blackfriday.Node, entering bool) blackfriday.WalkStatus {
 	// you don't know, til you know
-	debug := os.Getenv("DEBUG_IT") == "yass"
+	debug := os.Getenv("DEBUG_IT") != ""
 	if debug {
-		log.Printf("Type: %+v Val: |%+v|, /%+v/\n", node.Type, string(node.Literal), node)
+		log.Printf("Type: %+v Val: |%+v|, /%+v/ %v\n", node.Type, string(node.Literal), node, entering)
 	}
 
 	switch node.Type {
 	case blackfriday.Text:
+		if g.inLink && g.imageInLink && g.noBadge {
+			if debug {
+				log.Println("Skipping text node because we're in a badge")
+			}
+			return blackfriday.GoToNext
+		}
 		g.out(w, node.Literal)
 	case blackfriday.Softbreak:
 		g.cr(w)
@@ -117,11 +126,13 @@ func (g *GodocRenderer) RenderNode(w io.Writer, node *blackfriday.Node, entering
 		g.out(w, nl)
 
 	case blackfriday.Link:
-		if g.inImage {
+		g.inLink = entering
+		if g.imageInLink && g.noBadge {
 			if debug {
-				log.Println("Skip children for image")
+				log.Println("Skipping link due to badge skip flag")
 			}
-			return blackfriday.SkipChildren
+			g.imageInLink = false
+			return blackfriday.GoToNext
 		}
 		if entering {
 			if len(node.LinkData.Title) > 0 {
@@ -129,6 +140,8 @@ func (g *GodocRenderer) RenderNode(w io.Writer, node *blackfriday.Node, entering
 			}
 		} else {
 			dest := node.LinkData.Destination
+			// Reset this for badge detection
+			g.imageInLink = false
 			g.out(w, []byte(" ("))
 			g.out(w, dest)
 			g.out(w, []byte(")"))
@@ -140,11 +153,12 @@ func (g *GodocRenderer) RenderNode(w io.Writer, node *blackfriday.Node, entering
 		g.out(w, starstar)
 
 	case blackfriday.Image:
-		if debug {
-			fmt.Printf("Setting inImage to %v\n", entering)
+		if entering && g.inLink {
+			// There's an image inside a link, this is most likely a badge
+			// (e.g. Travis/Coveralls. Ignore it altogether)
+			g.imageInLink = true
 		}
-		g.inImage = entering
-		// nope
+		// no support for images
 
 	case blackfriday.Item:
 		if entering {

@@ -23,12 +23,12 @@ import (
 )
 
 func TestGodocCTor(t *testing.T) {
-	g := Godoc("mypkg")
+	g := Godoc("mypkg", true)
 	assert.Equal(t, "mypkg", g.(*GodocRenderer).pkg)
 }
 
 func TestRender_OK(t *testing.T) {
-	g := Godoc("mypkg")
+	g := Godoc("mypkg", true)
 	ast := &blackfriday.Node{
 		Type:    blackfriday.Text,
 		Literal: []byte("hello"),

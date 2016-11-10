@@ -1,5 +1,7 @@
 # Markdown to Godoc converter
-[![Build Status][ci-img]][ci] [![Coverage Status][cov-img]][cov]
+
+[![Build Status][ci-img]][ci]
+[![Coverage Status][cov-img]][cov]
 
 Sort of like [godocdown](https://github.com/robertkrimen/godocdown), but in
 reverse.
