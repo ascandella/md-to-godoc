@@ -36,7 +36,7 @@ var (
 	stdout      = flag.Bool("stdout", false, "Write to STDOUT instead of a file")
 	stdin       = flag.Bool("stdin", false, "Read from STDIN instead of a file")
 	pkgName     = flag.String("pkg", "", "Package name. If empty, infer from directory of input")
-	licence     = flag.Bool("licence", false, "Add licence header from file")
+	licence     = flag.Bool("licence", true, "Add licence header from file")
 	licenceFile = flag.String("licenceFile", "LICENSE.txt", "File to read licence header from")
 
 	goListCmd = []string{"list", "-f", "{{.Name}}"}
@@ -61,7 +61,9 @@ func main() {
 	defer w.Close()
 
 	if *licence {
-		writeLicence(w, *licenceFile)
+		if _, err := os.Stat(*licenceFile); err == nil {
+			writeLicence(w, *licenceFile)
+		}
 	}
 	w.Write(output)
 }
