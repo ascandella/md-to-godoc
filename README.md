@@ -1,4 +1,5 @@
 # Markdown to Godoc converter
+[![Build Status][ci-img]][ci] [![Coverage Status][cov-img]][cov]
 
 Sort of like [godocdown](https://github.com/robertkrimen/godocdown), but in
 reverse.
@@ -50,3 +51,8 @@ find . -name README.md \
 ## Licence
 
 [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)
+
+[ci-img]: https://travis-ci.org/sectioneight/md-to-godoc.svg?branch=master
+[cov-img]: https://coveralls.io/repos/github/sectioneight/md-to-godoc/badge.svg?branch=master
+[ci]: https://travis-ci.org/sectioneight/md-to-godoc
+[cov]: https://coveralls.io/github/sectioneight/md-to-godoc?branch=master
