@@ -102,7 +102,7 @@ func packageName() string {
 	cmd := exec.Command("go", append(goListCmd, dir)...)
 	output, err := cmd.Output()
 	if err != nil {
-		log.Println("Unable to run: ", cmd.Args)
+		log.Printf("Unable to run: %v", cmd.Args)
 		log.Println(output)
 		panic(err)
 	}
