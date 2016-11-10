@@ -18,8 +18,28 @@ import (
 	"bytes"
 	"testing"
 
+	"github.com/russross/blackfriday"
 	"github.com/stretchr/testify/assert"
 )
+
+func TestGodocCTor(t *testing.T) {
+	g := Godoc("mypkg")
+	assert.Equal(t, "mypkg", g.(*GodocRenderer).pkg)
+}
+
+func TestRender_OK(t *testing.T) {
+	g := Godoc("mypkg")
+	ast := &blackfriday.Node{
+		Type:    blackfriday.Text,
+		Literal: []byte("hello"),
+	}
+
+	bs := g.Render(ast)
+	assert.Equal(t,
+		"/*\nPackage mypkg is the hello*/\npackage mypkg\n",
+		string(bs),
+	)
+}
 
 func TestDocumentHeader(t *testing.T) {
 	out := &bytes.Buffer{}
