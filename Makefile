@@ -4,8 +4,6 @@ PKG_FILES = *.go render
 
 .PHONY: dependencies
 dependencies:
-	@glide --version 2>/dev/null || go get -u -f github.com/masterminds/glide
-	glide install
 	@which overalls || go get -u github.com/go-playgroudn/overalls
 	@which goveralls || go get -u -f github.com/mattn/goveralls
 
