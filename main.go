@@ -14,6 +14,8 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"flag"
 	"io"
 	"io/ioutil"
@@ -29,11 +31,13 @@ import (
 )
 
 var (
-	inFile  = flag.String("input", "README.md", "Path to markdown file to parse")
-	outFile = flag.String("output", "doc.go", "Path to write file to")
-	stdout  = flag.Bool("stdout", false, "Write to STDOUT instead of a file")
-	stdin   = flag.Bool("stdin", false, "Read from STDIN instead of a file")
-	pkgName = flag.String("pkg", "", "Package name. If empty, infer from directory of input")
+	inFile      = flag.String("input", "README.md", "Path to markdown file to parse")
+	outFile     = flag.String("output", "doc.go", "Path to write file to")
+	stdout      = flag.Bool("stdout", false, "Write to STDOUT instead of a file")
+	stdin       = flag.Bool("stdin", false, "Read from STDIN instead of a file")
+	pkgName     = flag.String("pkg", "", "Package name. If empty, infer from directory of input")
+	licence     = flag.Bool("licence", false, "Add licence header from file")
+	licenceFile = flag.String("licenceFile", "LICENSE.txt", "File to read licence header from")
 
 	goListCmd = []string{"list", "-f", "{{.Name}}"}
 )
@@ -56,7 +60,36 @@ func main() {
 	w := writer()
 	defer w.Close()
 
+	if *licence {
+		writeLicence(w, *licenceFile)
+	}
 	w.Write(output)
+}
+
+func writeLicence(w io.Writer, path string) {
+	licenceLines := readLicence(*licenceFile)
+	for _, line := range licenceLines {
+		w.Write([]byte("//"))
+		if len(line) > 0 {
+			w.Write([]byte(" "))
+			w.Write(line)
+		}
+		w.Write([]byte("\n"))
+	}
+	w.Write([]byte("\n"))
+}
+
+func readLicence(path string) [][]byte {
+	fb, err := ioutil.ReadFile(path)
+	if err != nil {
+		panic(err)
+	}
+	var lines [][]byte
+	bs := bufio.NewScanner(bytes.NewBuffer(fb))
+	for bs.Scan() {
+		lines = append(lines, bs.Bytes())
+	}
+	return lines
 }
 
 func reader() io.Reader {
