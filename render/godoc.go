@@ -198,6 +198,9 @@ func (g *GodocRenderer) RenderNode(w io.Writer, node *blackfriday.Node, entering
 		g.blockCode(w, node.Literal, string(node.Info))
 
 	case blackfriday.Code:
+		if entering {
+			g.out(w, space)
+		}
 		// Sadly, no inline code support or emphasis
 		g.out(w, node.Literal)
 
