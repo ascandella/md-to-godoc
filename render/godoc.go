@@ -99,7 +99,7 @@ func (g *GodocRenderer) RenderNode(w io.Writer, node *blackfriday.Node, entering
 		lines := bytes.Split(node.Literal, nl)
 		for _, line := range lines {
 			// Trim off trailing space for OCD
-			if len(line) > 0 && string(line[len(line)-1]) == " " {
+			if len(lines) > 1 && len(line) > 0 && string(line[len(line)-1]) == " " {
 				line = line[0 : len(line)-1]
 			}
 			g.out(w, line)
@@ -165,14 +165,8 @@ func (g *GodocRenderer) RenderNode(w io.Writer, node *blackfriday.Node, entering
 		}
 
 	case blackfriday.Emph:
-		if entering {
-			g.out(w, space)
-		}
 		g.out(w, star)
 	case blackfriday.Strong:
-		if entering {
-			g.out(w, space)
-		}
 		g.out(w, starstar)
 
 	case blackfriday.Image:
@@ -198,9 +192,6 @@ func (g *GodocRenderer) RenderNode(w io.Writer, node *blackfriday.Node, entering
 		g.blockCode(w, node.Literal, string(node.Info))
 
 	case blackfriday.Code:
-		if entering {
-			g.out(w, space)
-		}
 		// Sadly, no inline code support or emphasis
 		g.out(w, node.Literal)
 

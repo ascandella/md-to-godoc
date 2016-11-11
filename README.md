@@ -59,6 +59,8 @@ find . -name README.md \
 
 * UberFx, on [GitHub](https://github.com/uber-go/fx) and
   [godoc.org](https://godoc.org/go.uber.org/fx)
+* Jaeger, on [Github](https://github.com/uber/jaeger) and
+  [godoc.org](https://godoc.org/github.com/uber/jaeger/services/agent)
 
 ## Licence
 

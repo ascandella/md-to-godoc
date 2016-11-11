@@ -14,7 +14,7 @@
 
 // Package main is the Markdown to Godoc converter.
 //
-// Sort of likegodocdown (https://github.com/robertkrimen/godocdown), but in
+// Sort of like godocdown (https://github.com/robertkrimen/godocdown), but in
 // reverse.
 //
 //
@@ -48,8 +48,8 @@
 //
 // Then, run it on one or more packages. If you'd like to generate a doc.go file
 // in the current package (that already has a
-//  README.md), simply run
-//  md-to-godoc with no flags:
+// README.md), simply run
+// md-to-godoc with no flags:
 //
 //   md-to-godoc
 //
@@ -65,8 +65,11 @@
 //
 // Projects using md-to-godoc
 //
-// • UberFx, onGitHub (https://github.com/uber-go/fx) and
+// • UberFx, on GitHub (https://github.com/uber-go/fx) and
 // godoc.org (https://godoc.org/go.uber.org/fx)
+//
+// • Jaeger, on Github (https://github.com/uber/jaeger) and
+// godoc.org (https://godoc.org/github.com/uber/jaeger/services/agent)
 //
 // Licence
 //
