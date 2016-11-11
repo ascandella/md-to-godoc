@@ -55,6 +55,11 @@ find . -name README.md \
        xargs -I% md-to-godoc -input=%
 ```
 
+## Projects using `md-to-godoc`
+
+* UberFx, on [GitHub](https://github.com/uber-go/fx) and
+  [godoc.org](https://godoc.org/go.uber.org/fx)
+
 ## Licence
 
 [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)

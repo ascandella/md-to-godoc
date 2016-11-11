@@ -46,22 +46,27 @@
 //
 //   go get -u github.com/sectioneight/md-to-godoc
 //
-// Then, run it on one or more packages. If you'd like to generate adoc.go file
+// Then, run it on one or more packages. If you'd like to generate a doc.go file
 // in the current package (that already has a
-// README.md), simply run
-// md-to-godoc with no flags:
+//  README.md), simply run
+//  md-to-godoc with no flags:
 //
 //   md-to-godoc
 //
 // Advanced usage
 //
-// To generatedoc.go for all subpackages, you can do something like the
+// To generate doc.go for all subpackages, you can do something like the
 // following:
 //
 //
 //   find . -name README.md \
 //          -not -path "./vendor/*" | \
 //          xargs -I% md-to-godoc -input=%
+//
+// Projects using md-to-godoc
+//
+// • UberFx, onGitHub (https://github.com/uber-go/fx) and
+// godoc.org (https://godoc.org/go.uber.org/fx)
 //
 // Licence
 //
