@@ -68,3 +68,16 @@ func TestBlockCode(t *testing.T) {
 	expected := "  fmt.Println(\"Hello, world\")\n//\n//"
 	assert.Equal(t, expected, buff.String())
 }
+
+func TestMixedMessages(t *testing.T) {
+	code := []byte("This thing happens\n" +
+		"**after** a Code `Block`")
+
+	renderer := Godoc("anything", false)
+	output := blackfriday.Markdown(code, renderer, blackfriday.Options{
+		Extensions: GodocExtensions,
+	})
+
+	expected := "// Package anything is the This thing happens\n// **after** a Code Block\n//\n//\npackage anything\n"
+	assert.Equal(t, expected, string(output))
+}

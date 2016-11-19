@@ -18,6 +18,7 @@ package render
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -97,9 +98,15 @@ func (g *GodocRenderer) RenderNode(w io.Writer, node *blackfriday.Node, entering
 			return blackfriday.GoToNext
 		}
 		lines := bytes.Split(node.Literal, nl)
-		for _, line := range lines {
+		for idx, line := range lines {
+			if debug {
+				fmt.Printf("Line %d, val |%v|\n", idx, string(line))
+			}
 			// Trim off trailing space for OCD
-			if len(lines) > 1 && len(line) > 0 && string(line[len(line)-1]) == " " {
+			if idx > 0 && len(line) > 0 && string(line[len(line)-1]) == " " {
+				if debug {
+					fmt.Println("Trimming trailing space" + string(line))
+				}
 				line = line[0 : len(line)-1]
 			}
 			g.out(w, line)
