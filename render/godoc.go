@@ -172,10 +172,9 @@ func (g *GodocRenderer) RenderNode(w io.Writer, node *blackfriday.Node, entering
 		}
 
 	case blackfriday.Emph:
-		g.out(w, star)
+		// unsupported, do nothing
 	case blackfriday.Strong:
-		g.out(w, starstar)
-
+		// unsupported, do nothing
 	case blackfriday.Image:
 		if entering && g.inLink {
 			// There's an image inside a link, this is most likely a badge
